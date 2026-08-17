@@ -1,0 +1,26 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authRoutes_1 = __importDefault(require("./authRoutes"));
+const songRoutes_1 = __importDefault(require("./songRoutes"));
+const artistRoutes_1 = __importDefault(require("./artistRoutes"));
+const albumRoutes_1 = __importDefault(require("./albumRoutes"));
+const playlistRoutes_1 = __importDefault(require("./playlistRoutes"));
+const favoriteRoutes_1 = __importDefault(require("./favoriteRoutes"));
+const historyRoutes_1 = __importDefault(require("./historyRoutes"));
+const searchRoutes_1 = __importDefault(require("./searchRoutes"));
+const adminRoutes_1 = __importDefault(require("./adminRoutes"));
+const router = (0, express_1.Router)();
+router.use('/auth', authRoutes_1.default);
+router.use('/songs', songRoutes_1.default);
+router.use('/artists', artistRoutes_1.default);
+router.use('/albums', albumRoutes_1.default);
+router.use('/playlists', playlistRoutes_1.default);
+router.use('/favorites', favoriteRoutes_1.default);
+router.use('/history', historyRoutes_1.default);
+router.use('/search', searchRoutes_1.default);
+router.use('/admin', adminRoutes_1.default);
+exports.default = router;

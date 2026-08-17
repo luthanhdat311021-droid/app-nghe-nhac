@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const historyController_1 = require("../controllers/historyController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.get('/', auth_1.authenticate, historyController_1.getHistory);
+router.post('/', auth_1.optionalAuthenticate, historyController_1.recordHistory);
+router.delete('/', auth_1.authenticate, historyController_1.clearHistory);
+exports.default = router;

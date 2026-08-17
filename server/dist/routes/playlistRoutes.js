@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const playlistController_1 = require("../controllers/playlistController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.get('/public', playlistController_1.getPublicPlaylists);
+router.get('/user', auth_1.authenticate, playlistController_1.getUserPlaylists);
+router.get('/:id', auth_1.optionalAuthenticate, playlistController_1.getPlaylistById);
+router.post('/', auth_1.authenticate, playlistController_1.createPlaylist);
+router.put('/:id', auth_1.authenticate, playlistController_1.updatePlaylist);
+router.delete('/:id', auth_1.authenticate, playlistController_1.deletePlaylist);
+router.post('/:id/songs', auth_1.authenticate, playlistController_1.addSongToPlaylist);
+router.delete('/:id/songs/:songId', auth_1.authenticate, playlistController_1.removeSongFromPlaylist);
+exports.default = router;

@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const artistController_1 = require("../controllers/artistController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.get('/', artistController_1.getArtists);
+router.get('/:id', auth_1.optionalAuthenticate, artistController_1.getArtistById);
+router.post('/:id/follow', auth_1.authenticate, artistController_1.toggleFollowArtist);
+exports.default = router;
