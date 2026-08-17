@@ -67,13 +67,15 @@ model Genre {
 }
 
 model Song {
-  id          String   @id @default(uuid())
-  title       String
-  duration    Int      @default(180) // Duration in seconds
-  audioUrl    String
-  coverUrl    String?
-  lyrics      String?
-  releaseDate String?
+  id             String   @id @default(uuid())
+  title          String
+  duration       Int      @default(180) // Duration in seconds
+  sourceType     String   @default("DIRECT_URL") // UPLOAD, DIRECT_URL, YOUTUBE
+  audioUrl       String?
+  youtubeVideoId String?
+  coverUrl       String?
+  lyrics         String?
+  releaseDate    String?
   playCount   Int      @default(0)
 
   artistId    String

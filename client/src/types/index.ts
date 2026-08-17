@@ -53,7 +53,9 @@ export interface Song {
   id: string;
   title: string;
   duration: number; // in seconds
-  audioUrl: string;
+  sourceType?: 'UPLOAD' | 'DIRECT_URL' | 'YOUTUBE';
+  audioUrl?: string | null;
+  youtubeVideoId?: string | null;
   coverUrl?: string | null;
   lyrics?: string | null;
   releaseDate?: string | null;

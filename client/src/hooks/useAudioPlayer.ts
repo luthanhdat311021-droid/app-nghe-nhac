@@ -3,8 +3,9 @@ import { usePlayerStore } from '../store/usePlayerStore';
 import { songService } from '../services/songService';
 import { historyService } from '../services/historyService';
 import { useAuthStore } from '../store/useAuthStore';
+import { YouTubePlayerRef } from '../components/player/YouTubePlayer';
 
-export function useAudioPlayer() {
+export function useAudioPlayer(ytPlayerRef?: React.RefObject<YouTubePlayerRef>) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const {
@@ -13,9 +14,9 @@ export function useAudioPlayer() {
     volume,
     isMuted,
     currentTime,
+    duration,
     togglePlay,
     nextSong,
-    prevSong,
     setCurrentTime,
     setDuration,
     setPlaying,
@@ -24,7 +25,9 @@ export function useAudioPlayer() {
 
   const { isAuthenticated } = useAuthStore();
 
-  // Initialize HTMLAudioElement instance once
+  const isYouTube = currentSong?.sourceType === 'YOUTUBE' && !!currentSong?.youtubeVideoId;
+
+  // 1. Initialize HTML5 Audio instance once
   useEffect(() => {
     if (!audioRef.current) {
       const audio = new Audio();
@@ -35,20 +38,28 @@ export function useAudioPlayer() {
     const audio = audioRef.current;
 
     const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
+      if (!isYouTube) {
+        setCurrentTime(audio.currentTime);
+      }
     };
 
     const handleLoadedMetadata = () => {
-      setDuration(audio.duration || 0);
+      if (!isYouTube) {
+        setDuration(audio.duration || 0);
+      }
     };
 
     const handleEnded = () => {
-      nextSong();
+      if (!isYouTube) {
+        nextSong();
+      }
     };
 
     const handleError = (e: ErrorEvent) => {
-      console.warn('Audio playback error:', e);
-      setPlaying(false);
+      if (!isYouTube) {
+        console.warn('Audio playback error:', e);
+        setPlaying(false);
+      }
     };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
@@ -62,69 +73,70 @@ export function useAudioPlayer() {
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError as EventListener);
     };
-  }, [setCurrentTime, setDuration, nextSong, setPlaying]);
+  }, [isYouTube, setCurrentTime, setDuration, nextSong, setPlaying]);
 
-  // Handle currentSong change
+  // 2. Handle currentSong change & record history
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
 
-    if (currentSong && currentSong.audioUrl) {
-      if (audio.src !== currentSong.audioUrl) {
-        audio.src = currentSong.audioUrl;
-        audio.currentTime = 0;
-        
-        if (isPlaying) {
-          audio.play().catch((err) => {
-            console.warn('Auto-play blocked or failed:', err);
-            setPlaying(false);
-          });
-        }
-
-        // Record listening history & play count in background
-        songService.recordPlay(currentSong.id).catch(() => {});
-        if (isAuthenticated) {
-          historyService.recordHistory(currentSong.id).catch(() => {});
-        }
+    if (currentSong) {
+      // Record stream play count & history
+      songService.recordPlay(currentSong.id).catch(() => {});
+      if (isAuthenticated) {
+        historyService.recordHistory(currentSong.id).catch(() => {});
       }
-    } else {
+
+      if (!isYouTube && currentSong.audioUrl) {
+        if (audio && audio.src !== currentSong.audioUrl) {
+          audio.src = currentSong.audioUrl;
+          audio.currentTime = 0;
+          if (isPlaying) {
+            audio.play().catch(() => setPlaying(false));
+          }
+        }
+      } else if (isYouTube && audio) {
+        // Pause HTML5 audio if switching to YouTube
+        audio.pause();
+        audio.src = '';
+      }
+    } else if (audio) {
       audio.pause();
       audio.src = '';
     }
-  }, [currentSong]);
+  }, [currentSong?.id]);
 
-  // Handle play/pause state change
+  // 3. Handle Play / Pause for HTML5 Audio
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !currentSong) return;
+    if (!audio || !currentSong || isYouTube) return;
 
     if (isPlaying) {
       audio.play().catch(() => setPlaying(false));
     } else {
       audio.pause();
     }
-  }, [isPlaying, currentSong]);
+  }, [isPlaying, currentSong, isYouTube]);
 
-  // Handle volume & mute change
+  // 4. Handle Volume for HTML5 Audio
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.volume = isMuted ? 0 : volume;
   }, [volume, isMuted]);
 
-  // Seek function
+  // Unified Seek Function
   const seek = (time: number) => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.currentTime = time;
-      setCurrentTime(time);
+    setCurrentTime(time);
+    if (isYouTube && ytPlayerRef?.current) {
+      ytPlayerRef.current.seekTo(time);
+    } else if (audioRef.current) {
+      audioRef.current.currentTime = time;
     }
   };
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore keyboard shortcuts when typing in inputs/textareas
       const target = e.target as HTMLElement;
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable) {
         return;
@@ -135,7 +147,7 @@ export function useAudioPlayer() {
         togglePlay();
       } else if (e.code === 'ArrowRight') {
         e.preventDefault();
-        seek(Math.min(currentTime + 5, audioRef.current?.duration || 0));
+        seek(Math.min(currentTime + 5, duration || 0));
       } else if (e.code === 'ArrowLeft') {
         e.preventDefault();
         seek(Math.max(currentTime - 5, 0));
@@ -150,7 +162,7 @@ export function useAudioPlayer() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentTime, volume, togglePlay, setVolume]);
+  }, [currentTime, duration, volume, togglePlay, setVolume]);
 
   return {
     seek,

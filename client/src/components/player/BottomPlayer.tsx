@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Play,
   Pause,
@@ -12,13 +12,17 @@ import {
   Heart,
   ListMusic,
   FileText,
+  Youtube,
 } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 import { favoriteService } from '../../services/favoriteService';
 import { useAuthStore } from '../../store/useAuthStore';
+import { YouTubePlayer, YouTubePlayerRef } from './YouTubePlayer';
 
 export const BottomPlayer: React.FC = () => {
+  const ytPlayerRef = useRef<YouTubePlayerRef>(null);
+
   const {
     currentSong,
     isPlaying,
@@ -39,13 +43,18 @@ export const BottomPlayer: React.FC = () => {
     toggleRepeat,
     setLyricsOpen,
     setQueueOpen,
+    setCurrentTime,
+    setDuration,
+    setPlaying,
     toggleFavoriteStatus,
   } = usePlayerStore();
 
-  const { seek } = useAudioPlayer();
+  const { seek } = useAudioPlayer(ytPlayerRef);
   const { isAuthenticated } = useAuthStore();
 
   if (!currentSong) return null;
+
+  const isYouTube = currentSong.sourceType === 'YOUTUBE' && !!currentSong.youtubeVideoId;
 
   const formatTime = (seconds: number) => {
     if (isNaN(seconds) || seconds < 0) return '00:00';
@@ -74,13 +83,38 @@ export const BottomPlayer: React.FC = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 h-24 bg-[#0e0c18]/95 backdrop-blur-2xl border-t border-white/10 z-40 px-6 flex items-center justify-between shadow-2xl transition-all">
+      {/* Hidden YouTube Iframe Player Container */}
+      {isYouTube && currentSong.youtubeVideoId && (
+        <div className="fixed -top-[9999px] -left-[9999px] w-1 h-1 overflow-hidden opacity-0 pointer-events-none">
+          <YouTubePlayer
+            ref={ytPlayerRef}
+            videoId={currentSong.youtubeVideoId}
+            isPlaying={isPlaying}
+            volume={volume}
+            isMuted={isMuted}
+            onTimeUpdate={(time) => setCurrentTime(time)}
+            onDurationChange={(dur) => setDuration(dur)}
+            onEnded={() => nextSong()}
+            onError={() => setPlaying(false)}
+          />
+        </div>
+      )}
+
       {/* 1. Left: Track Info & Favorite */}
       <div className="flex items-center gap-4 w-1/4 min-w-[200px]">
-        <img
-          src={currentSong.coverUrl || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80'}
-          alt={currentSong.title}
-          className="w-14 h-14 rounded-xl object-cover shadow-lg border border-white/10 flex-shrink-0"
-        />
+        <div className="relative flex-shrink-0">
+          <img
+            src={currentSong.coverUrl || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80'}
+            alt={currentSong.title}
+            className="w-14 h-14 rounded-xl object-cover shadow-lg border border-white/10"
+          />
+          {isYouTube && (
+            <div className="absolute -top-1.5 -right-1.5 p-1 rounded-full bg-red-600 text-white shadow" title="YouTube Source">
+              <Youtube className="w-3 h-3 fill-current" />
+            </div>
+          )}
+        </div>
+
         <div className="min-w-0 flex-1">
           <h4 className="text-sm font-bold text-white truncate hover:underline cursor-pointer">
             {currentSong.title}

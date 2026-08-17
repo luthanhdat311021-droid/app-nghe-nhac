@@ -56,18 +56,28 @@ exports.getAdminStats = getAdminStats;
 // --- SONG CRUD ---
 const createSong = async (req, res) => {
     try {
-        const { title, artistId, albumId, genreId, audioUrl, coverUrl, lyrics, duration, releaseDate } = req.body;
-        if (!title || !artistId || !audioUrl) {
-            return (0, response_1.sendError)(res, 'Title, artistId, and audioUrl are required', 400);
+        const { title, artistId, albumId, genreId, sourceType = 'DIRECT_URL', audioUrl, youtubeVideoId, coverUrl, lyrics, duration, releaseDate, } = req.body;
+        if (!title || !artistId) {
+            return (0, response_1.sendError)(res, 'Title and artistId are required', 400);
         }
+        if (sourceType === 'YOUTUBE' && !youtubeVideoId) {
+            return (0, response_1.sendError)(res, 'YouTube Video ID is required for YouTube songs', 400);
+        }
+        if (sourceType !== 'YOUTUBE' && !audioUrl) {
+            return (0, response_1.sendError)(res, 'Audio URL is required for non-YouTube songs', 400);
+        }
+        // Default cover URL for YouTube if not provided
+        const finalCoverUrl = coverUrl || (sourceType === 'YOUTUBE' && youtubeVideoId ? `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg` : null);
         const song = await db_1.prisma.song.create({
             data: {
                 title,
                 artistId,
                 albumId: albumId || null,
                 genreId: genreId || null,
-                audioUrl,
-                coverUrl: coverUrl || null,
+                sourceType: sourceType || 'DIRECT_URL',
+                audioUrl: audioUrl || null,
+                youtubeVideoId: youtubeVideoId || null,
+                coverUrl: finalCoverUrl,
                 lyrics: lyrics || null,
                 duration: duration ? Number(duration) : 180,
                 releaseDate: releaseDate || new Date().toISOString().split('T')[0],
@@ -88,7 +98,7 @@ exports.createSong = createSong;
 const updateSong = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, artistId, albumId, genreId, audioUrl, coverUrl, lyrics, duration, releaseDate } = req.body;
+        const { title, artistId, albumId, genreId, sourceType, audioUrl, youtubeVideoId, coverUrl, lyrics, duration, releaseDate, } = req.body;
         const song = await db_1.prisma.song.update({
             where: { id },
             data: {
@@ -96,7 +106,9 @@ const updateSong = async (req, res) => {
                 ...(artistId && { artistId }),
                 ...(albumId !== undefined && { albumId: albumId || null }),
                 ...(genreId !== undefined && { genreId: genreId || null }),
-                ...(audioUrl && { audioUrl }),
+                ...(sourceType && { sourceType }),
+                ...(audioUrl !== undefined && { audioUrl: audioUrl || null }),
+                ...(youtubeVideoId !== undefined && { youtubeVideoId: youtubeVideoId || null }),
                 ...(coverUrl !== undefined && { coverUrl: coverUrl || null }),
                 ...(lyrics !== undefined && { lyrics: lyrics || null }),
                 ...(duration && { duration: Number(duration) }),
