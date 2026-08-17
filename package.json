@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "MusicWave - Modern Music Streaming Web Application",
+  "workspaces": [
+    "server",
+    "client"
+  ],
   "scripts": {
+    "vercel-build": "npm run db:generate --prefix server && npm run build --prefix client",
     "setup": "npm run install:all && npm run db:migrate && npm run db:seed",
     "install:all": "npm install && npm --prefix server install && npm --prefix client install",
     "dev:server": "npm --prefix server run dev",
@@ -11,7 +16,7 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "build:server": "npm --prefix server run build",
     "build:client": "npm --prefix client run build",
-    "build": "npm run build:server && npm run build:client",
+    "build": "npm run vercel-build",
     "db:migrate": "npm --prefix server run db:migrate",
     "db:seed": "npm --prefix server run db:seed",
     "db:studio": "npm --prefix server run db:studio"
