@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, Bell, User as UserIcon, LogOut, Shield, Heart, Library } from 'lucide-react';
+import { Search, Bell, User as UserIcon, LogOut, Shield, Heart, Library, PlusCircle } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 
 export const Header: React.FC = () => {
@@ -30,21 +30,78 @@ export const Header: React.FC = () => {
   }, []);
 
   return (
-    <header className="h-20 px-8 glass-nav sticky top-0 z-20 flex items-center justify-between gap-6">
-      {/* Real-time Search Input */}
-      <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
+    <header className="px-4 md:px-8 py-3 md:py-0 md:h-20 glass-nav sticky top-0 z-20 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
+      {/* Mobile Top Row: Logo & User Actions */}
+      <div className="flex md:hidden items-center justify-between w-full">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
+            <span className="font-extrabold text-white text-xs">MW</span>
+          </div>
+          <span className="font-extrabold text-lg tracking-wider text-white">
+            Music<span className="text-gradient">Wave</span>
+          </span>
+        </Link>
+
+        {/* Mobile Right Actions */}
+        <div className="flex items-center gap-2">
+          {isAuthenticated && (
+            <button
+              onClick={() => setIsNotifOpen(!isNotifOpen)}
+              className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 relative min-w-[40px] min-h-[40px] flex items-center justify-center"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4" />
+              <span className="w-2 h-2 rounded-full bg-pink-500 absolute top-2 right-2 ring-2 ring-[#0d0b14]" />
+            </button>
+          )}
+
+          {isAuthenticated && user ? (
+            <Link to="/profile" className="p-0.5 rounded-full ring-2 ring-purple-500/30">
+              <img
+                src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80'}
+                alt={user.username}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-primary text-white shadow-glow"
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Real-time Search Input (Full width on mobile, max-md on desktop) */}
+      <form onSubmit={handleSearchSubmit} className="relative w-full md:flex-1 md:max-w-md">
         <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search songs, artists, albums, playlists..."
-          className="w-full pl-11 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-full text-sm text-white placeholder-gray-400 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all"
+          onFocus={() => {
+            if (window.innerWidth < 768 && !searchQuery) {
+              navigate('/search');
+            }
+          }}
+          placeholder="Search songs, artists, playlists..."
+          className="w-full pl-11 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-full text-xs md:text-sm text-white placeholder-gray-400 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all min-h-[44px]"
         />
       </form>
 
-      {/* Right User Actions */}
-      <div className="flex items-center gap-4" ref={menuRef}>
+      {/* Right User Actions (Desktop) */}
+      <div className="hidden md:flex items-center gap-4" ref={menuRef}>
+        {/* Quick Add Song Button */}
+        <Link
+          to="/admin/songs"
+          className="px-3.5 py-2 rounded-full bg-gradient-primary text-white text-xs font-bold shadow-glow hover:opacity-90 transition-all flex items-center gap-1.5"
+        >
+          <PlusCircle className="w-4 h-4" />
+          <span>Add Song</span>
+        </Link>
+
         {/* Notification Bell */}
         {isAuthenticated && (
           <div className="relative">

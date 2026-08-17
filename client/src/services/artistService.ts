@@ -17,6 +17,11 @@ export const artistService = {
     return res.data.data;
   },
 
+  async createArtist(data: Partial<Artist>): Promise<Artist> {
+    const res = await api.post('/artists', data);
+    return res.data.data;
+  },
+
   async followArtist(id: string): Promise<void> {
     await api.post(`/artists/${id}/follow`);
   },

@@ -2,9 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const artistController_1 = require("../controllers/artistController");
+const adminController_1 = require("../controllers/adminController");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 router.get('/', artistController_1.getArtists);
+router.post('/', auth_1.optionalAuthenticate, adminController_1.createArtist);
 router.get('/:id', auth_1.optionalAuthenticate, artistController_1.getArtistById);
 router.post('/:id/follow', auth_1.authenticate, artistController_1.toggleFollowArtist);
 exports.default = router;

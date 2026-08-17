@@ -74,30 +74,45 @@ export const createSong = async (req: AuthenticatedRequest, res: Response) => {
       releaseDate,
     } = req.body;
 
-    if (!title || !artistId) {
-      return sendError(res, 'Title and artistId are required', 400);
+    if (!title) {
+      return sendError(res, 'Song title is required', 400);
+    }
+
+    let targetArtistId = artistId;
+    if (!targetArtistId) {
+      const existingArtist = await prisma.artist.findFirst();
+      if (existingArtist) {
+        targetArtistId = existingArtist.id;
+      } else {
+        const newArtist = await prisma.artist.create({
+          data: {
+            name: 'MusicWave Artist',
+            biography: 'Featured MusicWave Creator',
+            avatar: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&q=80',
+          },
+        });
+        targetArtistId = newArtist.id;
+      }
     }
 
     if (sourceType === 'YOUTUBE' && !youtubeVideoId) {
-      return sendError(res, 'YouTube Video ID is required for YouTube songs', 400);
+      return sendError(res, 'YouTube Video ID or valid YouTube URL is required', 400);
     }
 
-    if (sourceType !== 'YOUTUBE' && !audioUrl) {
-      return sendError(res, 'Audio URL is required for non-YouTube songs', 400);
-    }
+    const finalAudioUrl = sourceType === 'YOUTUBE'
+      ? null
+      : (audioUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
 
-    // Default cover URL for YouTube if not provided
-    const finalCoverUrl =
-      coverUrl || (sourceType === 'YOUTUBE' && youtubeVideoId ? `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg` : null);
+    const finalCoverUrl = coverUrl || (sourceType === 'YOUTUBE' && youtubeVideoId ? `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&q=80');
 
     const song = await prisma.song.create({
       data: {
         title,
-        artistId,
+        artistId: targetArtistId,
         albumId: albumId || null,
         genreId: genreId || null,
         sourceType: sourceType || 'DIRECT_URL',
-        audioUrl: audioUrl || null,
+        audioUrl: finalAudioUrl,
         youtubeVideoId: youtubeVideoId || null,
         coverUrl: finalCoverUrl,
         lyrics: lyrics || null,
@@ -113,6 +128,7 @@ export const createSong = async (req: AuthenticatedRequest, res: Response) => {
 
     return sendSuccess(res, song, 'Song created successfully', 201);
   } catch (error) {
+    console.error('Failed to create song error:', error);
     return sendError(res, 'Failed to create song', 500, error);
   }
 };

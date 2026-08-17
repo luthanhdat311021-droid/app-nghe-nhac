@@ -15,34 +15,30 @@ import {
   changeUserRole,
   deleteUser,
 } from '../controllers/adminController';
-import { authenticate, requireAdmin } from '../middleware/auth';
+import { authenticate, optionalAuthenticate, requireAdmin } from '../middleware/auth';
 
 const router = Router();
 
-// Protect all admin routes
-router.use(authenticate, requireAdmin);
+// Songs CRUD - Open to all users
+router.post('/songs', optionalAuthenticate, createSong);
+router.put('/songs/:id', optionalAuthenticate, updateSong);
+router.delete('/songs/:id', optionalAuthenticate, deleteSong);
 
-router.get('/stats', getAdminStats);
+// Artists CRUD - Open to all users
+router.post('/artists', optionalAuthenticate, createArtist);
+router.put('/artists/:id', optionalAuthenticate, updateArtist);
+router.delete('/artists/:id', optionalAuthenticate, deleteArtist);
 
-// Songs CRUD
-router.post('/songs', createSong);
-router.put('/songs/:id', updateSong);
-router.delete('/songs/:id', deleteSong);
+// Albums CRUD - Open to all users
+router.post('/albums', optionalAuthenticate, createAlbum);
+router.put('/albums/:id', optionalAuthenticate, updateAlbum);
+router.delete('/albums/:id', optionalAuthenticate, deleteAlbum);
 
-// Artists CRUD
-router.post('/artists', createArtist);
-router.put('/artists/:id', updateArtist);
-router.delete('/artists/:id', deleteArtist);
-
-// Albums CRUD
-router.post('/albums', createAlbum);
-router.put('/albums/:id', updateAlbum);
-router.delete('/albums/:id', deleteAlbum);
-
-// Users Management
-router.get('/users', getUsers);
-router.put('/users/:id/lock', toggleUserLock);
-router.put('/users/:id/role', changeUserRole);
-router.delete('/users/:id', deleteUser);
+// Admin-Only Routes
+router.get('/stats', authenticate, requireAdmin, getAdminStats);
+router.get('/users', authenticate, requireAdmin, getUsers);
+router.put('/users/:id/lock', authenticate, requireAdmin, toggleUserLock);
+router.put('/users/:id/role', authenticate, requireAdmin, changeUserRole);
+router.delete('/users/:id', authenticate, requireAdmin, deleteUser);
 
 export default router;

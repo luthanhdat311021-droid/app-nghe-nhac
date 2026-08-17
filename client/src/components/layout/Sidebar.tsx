@@ -40,7 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenCreatePlaylist }) => {
   ];
 
   return (
-    <aside className={`w-64 h-full bg-[#0d0b14]/90 backdrop-blur-xl border-r border-white/5 flex flex-col justify-between select-none z-30 transition-all ${currentSong ? 'pb-24' : 'pb-6'}`}>
+    <aside className={`hidden md:flex w-64 h-full bg-[#0d0b14]/90 backdrop-blur-xl border-r border-white/5 flex-col justify-between select-none z-30 transition-all ${currentSong ? 'pb-24' : 'pb-6'}`}>
       <div className="p-6">
         {/* Brand Logo */}
         <NavLink to="/" className="flex items-center gap-3 mb-8 group">
@@ -107,13 +107,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenCreatePlaylist }) => {
             </nav>
           </div>
 
-          {/* Quick Create Playlist */}
-          <div className="pt-2">
+          {/* Quick Upload Song & Create Playlist */}
+          <div className="pt-2 space-y-2">
+            <NavLink
+              to="/admin/songs"
+              className={({ isActive }) =>
+                `w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-primary hover:opacity-90 shadow-glow transition-all group`
+              }
+            >
+              <PlusCircle className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+              <span>Upload / Add Song</span>
+            </NavLink>
+
             <button
               onClick={onOpenCreatePlaylist}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 transition-all group"
             >
-              <PlusCircle className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+              <ListMusic className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
               <span>Create Playlist</span>
             </button>
           </div>
@@ -134,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenCreatePlaylist }) => {
             }
           >
             <ShieldCheck className="w-4 h-4" />
-            <span>Admin Panel</span>
+            <span>Admin Dashboard</span>
           </NavLink>
         </div>
       )}

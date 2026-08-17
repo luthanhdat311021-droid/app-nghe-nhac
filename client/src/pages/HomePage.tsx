@@ -65,32 +65,32 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-300">
+    <div className="space-y-8 md:space-y-10 animate-in fade-in duration-300 pb-6">
       {/* Hero Banner Section */}
-      <section className="relative rounded-3xl p-8 md:p-12 overflow-hidden bg-gradient-to-r from-purple-900/60 via-purple-800/30 to-pink-900/40 border border-purple-500/20 shadow-2xl">
-        <div className="absolute -right-10 -bottom-10 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 max-w-2xl space-y-4">
+      <section className="relative rounded-3xl p-6 sm:p-8 md:p-12 overflow-hidden bg-gradient-to-r from-purple-900/60 via-purple-800/30 to-pink-900/40 border border-purple-500/20 shadow-2xl">
+        <div className="absolute -right-10 -bottom-10 w-72 md:w-96 h-72 md:h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 max-w-2xl space-y-3.5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Curated Soundscapes</span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
             Discover your next <span className="text-gradient">favorite song.</span>
           </h1>
-          <p className="text-sm md:text-base text-gray-300">
+          <p className="text-xs sm:text-sm md:text-base text-gray-300">
             Stream high fidelity audio, create custom playlists, and follow your favorite neon cyberpunk, lofi, and modern pop creators.
           </p>
-          <div className="flex items-center gap-4 pt-2">
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               onClick={handleStartListening}
-              className="px-6 py-3 rounded-full bg-gradient-primary hover:bg-gradient-hover text-white text-sm font-bold shadow-glow hover:scale-105 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-gradient-primary hover:bg-gradient-hover text-white text-xs sm:text-sm font-bold shadow-glow active:scale-95 transition-all flex items-center gap-2 min-h-[44px]"
             >
               <Play className="w-4 h-4 fill-current" />
               <span>Start Listening</span>
             </button>
             <button
               onClick={() => navigate('/explore')}
-              className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/10 backdrop-blur-md transition-all flex items-center gap-2"
+              className="px-5 py-2.5 sm:px-6 sm:py-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold border border-white/10 backdrop-blur-md active:scale-95 transition-all flex items-center gap-2 min-h-[44px]"
             >
               <Compass className="w-4 h-4" />
               <span>Explore Music</span>
@@ -99,61 +99,75 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Recently Played Section (if logged in & available) */}
+      {/* Recently Played Section */}
       {recentlyPlayed.length > 0 && (
-        <section className="space-y-4">
+        <section className="space-y-3 md:space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+            <h2 className="text-lg md:text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
               <Radio className="w-5 h-5 text-purple-400" />
               <span>Recently Played</span>
             </h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="flex md:grid md:grid-cols-4 lg:grid-cols-6 gap-3.5 md:gap-4 overflow-x-auto scrollbar-none snap-x pb-2 -mx-4 px-4 md:mx-0 md:px-0">
             {recentlyPlayed.map((item) => (
-              <SongCard key={item.id} song={item.song} />
+              <div key={item.id} className="w-36 sm:w-44 md:w-auto flex-shrink-0 snap-start">
+                <SongCard song={item.song} />
+              </div>
             ))}
           </div>
         </section>
       )}
 
       {/* Trending Now */}
-      <section className="space-y-4">
+      <section className="space-y-3 md:space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-lg md:text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <Flame className="w-5 h-5 text-amber-400" />
             <span>Trending Now</span>
           </h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="flex md:grid md:grid-cols-4 lg:grid-cols-6 gap-3.5 md:gap-4 overflow-x-auto scrollbar-none snap-x pb-2 -mx-4 px-4 md:mx-0 md:px-0">
           {loading
-            ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="w-36 sm:w-44 md:w-auto flex-shrink-0">
+                  <SkeletonCard />
+                </div>
+              ))
             : trendingSongs.slice(0, 6).map((song) => (
-                <SongCard key={song.id} song={song} playlistContext={trendingSongs} />
+                <div key={song.id} className="w-36 sm:w-44 md:w-auto flex-shrink-0 snap-start">
+                  <SongCard song={song} playlistContext={trendingSongs} />
+                </div>
               ))}
         </div>
       </section>
 
       {/* Recommended For You */}
-      <section className="space-y-4">
+      <section className="space-y-3 md:space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-lg md:text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-pink-400" />
             <span>Recommended For You</span>
           </h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="flex md:grid md:grid-cols-4 lg:grid-cols-6 gap-3.5 md:gap-4 overflow-x-auto scrollbar-none snap-x pb-2 -mx-4 px-4 md:mx-0 md:px-0">
           {loading
-            ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="w-36 sm:w-44 md:w-auto flex-shrink-0">
+                  <SkeletonCard />
+                </div>
+              ))
             : recommendedSongs.slice(0, 6).map((song) => (
-                <SongCard key={song.id} song={song} playlistContext={recommendedSongs} />
+                <div key={song.id} className="w-36 sm:w-44 md:w-auto flex-shrink-0 snap-start">
+                  <SongCard song={song} playlistContext={recommendedSongs} />
+                </div>
               ))}
         </div>
       </section>
 
       {/* Top Charts Table */}
-      <section className="space-y-4">
+      <section className="space-y-3 md:space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-lg md:text-xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-emerald-400" />
             <span>Top Charts</span>
           </h2>
@@ -173,25 +187,29 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* Popular Artists */}
-      <section className="space-y-4">
+      <section className="space-y-3 md:space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold text-white tracking-tight">Popular Artists</h2>
+          <h2 className="text-lg md:text-xl font-extrabold text-white tracking-tight">Popular Artists</h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4">
+        <div className="flex md:grid md:grid-cols-5 lg:grid-cols-6 gap-3.5 md:gap-4 overflow-x-auto scrollbar-none snap-x pb-2 -mx-4 px-4 md:mx-0 md:px-0">
           {popularArtists.slice(0, 6).map((artist) => (
-            <ArtistCard key={artist.id} artist={artist} />
+            <div key={artist.id} className="w-32 sm:w-40 md:w-auto flex-shrink-0 snap-start">
+              <ArtistCard artist={artist} />
+            </div>
           ))}
         </div>
       </section>
 
       {/* Popular Albums */}
-      <section className="space-y-4">
+      <section className="space-y-3 md:space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold text-white tracking-tight">Popular Albums</h2>
+          <h2 className="text-lg md:text-xl font-extrabold text-white tracking-tight">Popular Albums</h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="flex md:grid md:grid-cols-4 lg:grid-cols-6 gap-3.5 md:gap-4 overflow-x-auto scrollbar-none snap-x pb-2 -mx-4 px-4 md:mx-0 md:px-0">
           {popularAlbums.slice(0, 6).map((album) => (
-            <AlbumCard key={album.id} album={album} />
+            <div key={album.id} className="w-36 sm:w-44 md:w-auto flex-shrink-0 snap-start">
+              <AlbumCard album={album} />
+            </div>
           ))}
         </div>
       </section>

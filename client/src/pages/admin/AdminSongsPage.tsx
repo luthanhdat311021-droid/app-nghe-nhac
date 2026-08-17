@@ -6,6 +6,7 @@ import { albumService } from '../../services/albumService';
 import { adminService } from '../../services/adminService';
 import { Song, Artist, Album } from '../../types';
 import { extractYouTubeVideoId, isValidYouTubeUrl, fetchYouTubeMetadata } from '../../utils/youtube';
+import { AdminSongCard } from './components/AdminSongCard';
 
 export const AdminSongsPage: React.FC = () => {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -154,8 +155,10 @@ export const AdminSongsPage: React.FC = () => {
 
       setIsModalOpen(false);
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save song:', err);
+      const msg = err.response?.data?.message || err.message || 'Failed to save song. Please check required fields.';
+      alert(msg);
     }
   };
 
@@ -204,8 +207,26 @@ export const AdminSongsPage: React.FC = () => {
         />
       </div>
 
-      {/* Songs Table */}
-      <div className="glass-panel rounded-3xl border border-white/10 overflow-hidden">
+      {/* Mobile Song Cards View (< md) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+        {loading ? (
+          <p className="text-center text-gray-400 py-6">Loading songs...</p>
+        ) : songs.length === 0 ? (
+          <p className="text-center text-gray-400 py-6">No songs found.</p>
+        ) : (
+          songs.map((song) => (
+            <AdminSongCard
+              key={song.id}
+              song={song}
+              onEdit={handleOpenEditModal}
+              onDelete={handleDelete}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Desktop Songs Table (md+) */}
+      <div className="hidden md:block glass-panel rounded-3xl border border-white/10 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-white/5 text-gray-400 uppercase tracking-wider font-semibold border-b border-white/10">
@@ -318,7 +339,27 @@ export const AdminSongsPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Artist *</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-gray-300 font-semibold">Artist *</label>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const name = window.prompt('Enter new Artist name:');
+                        if (!name || !name.trim()) return;
+                        try {
+                          const newArtist = await artistService.createArtist({ name: name.trim() });
+                          setArtists((prev) => [...prev, newArtist]);
+                          setArtistId(newArtist.id);
+                          alert(`Artist "${newArtist.name}" created successfully!`);
+                        } catch (_err) {
+                          alert('Failed to create artist.');
+                        }
+                      }}
+                      className="text-[10px] text-purple-400 hover:text-purple-300 font-bold underline"
+                    >
+                      + New Artist
+                    </button>
+                  </div>
                   <select
                     value={artistId}
                     onChange={(e) => setArtistId(e.target.value)}

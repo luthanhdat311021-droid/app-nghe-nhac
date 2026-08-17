@@ -27,6 +27,11 @@ export const songService = {
     return res.data.data;
   },
 
+  async createSong(data: Partial<Song>): Promise<Song> {
+    const res = await api.post('/songs', data);
+    return res.data.data;
+  },
+
   async getGenres(): Promise<Genre[]> {
     const res = await api.get('/genres');
     return res.data.data;

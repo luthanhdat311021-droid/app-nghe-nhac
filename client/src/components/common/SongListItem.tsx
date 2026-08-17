@@ -1,9 +1,10 @@
-import React from 'react';
-import { Play, Pause, Heart, Trash2, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { Play, Heart, Trash2, MoreVertical } from 'lucide-react';
 import { Song } from '../../types';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { favoriteService } from '../../services/favoriteService';
 import { useAuthStore } from '../../store/useAuthStore';
+import { SongActionSheet } from './SongActionSheet';
 
 interface SongListItemProps {
   song: Song;
@@ -22,10 +23,12 @@ export const SongListItem: React.FC<SongListItemProps> = ({
 }) => {
   const { currentSong, isPlaying, playSong, togglePlay, toggleFavoriteStatus } = usePlayerStore();
   const { isAuthenticated } = useAuthStore();
+  const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
 
   const isCurrent = currentSong?.id === song.id;
 
   const formatDuration = (seconds: number) => {
+    if (!seconds) return '03:30';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -55,91 +58,100 @@ export const SongListItem: React.FC<SongListItemProps> = ({
   };
 
   return (
-    <div
-      onClick={handlePlayClick}
-      className={`group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all select-none cursor-pointer border ${
-        isCurrent
-          ? 'bg-purple-600/15 border-purple-500/30 text-purple-300 shadow-glow'
-          : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.08] text-gray-300'
-      }`}
-    >
-      {/* Index or Play icon */}
-      <div className="w-8 flex items-center justify-center font-bold text-xs text-gray-500 group-hover:text-white">
-        {isCurrent ? (
-          isPlaying ? (
-            <div className="flex items-end gap-0.5 h-4">
-              <span className="w-1 bg-purple-400 eq-bar" />
-              <span className="w-1 bg-purple-400 eq-bar" />
-              <span className="w-1 bg-purple-400 eq-bar" />
-            </div>
+    <>
+      <div
+        onClick={handlePlayClick}
+        className={`group flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2.5 md:py-3 rounded-2xl transition-all select-none cursor-pointer border active:scale-[0.99] ${
+          isCurrent
+            ? 'bg-purple-600/15 border-purple-500/30 text-purple-300 shadow-glow'
+            : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.08] text-gray-300'
+        }`}
+      >
+        {/* Index or Equalizer */}
+        <div className="w-6 md:w-8 flex items-center justify-center font-bold text-xs text-gray-500 flex-shrink-0">
+          {isCurrent ? (
+            isPlaying ? (
+              <div className="flex items-end gap-0.5 h-4">
+                <span className="w-1 bg-purple-400 eq-bar" />
+                <span className="w-1 bg-purple-400 eq-bar" />
+                <span className="w-1 bg-purple-400 eq-bar" />
+              </div>
+            ) : (
+              <Play className="w-4 h-4 text-purple-400 fill-current" />
+            )
           ) : (
-            <Play className="w-4 h-4 text-purple-400 fill-current" />
-          )
-        ) : (
-          <span className="group-hover:hidden">{(index + 1).toString().padStart(2, '0')}</span>
-        )}
-        {!isCurrent && (
-          <Play className="w-4 h-4 text-white fill-current hidden group-hover:block" />
-        )}
-      </div>
-
-      {/* Cover Image */}
-      <img
-        src={song.coverUrl || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=150&q=80'}
-        alt={song.title}
-        className="w-11 h-11 rounded-xl object-cover shadow border border-white/10"
-      />
-
-      {/* Title & Artist */}
-      <div className="min-w-0 flex-1">
-        <h4 className={`text-sm font-bold truncate ${isCurrent ? 'text-purple-300' : 'text-white'}`}>
-          {song.title}
-        </h4>
-        <p className="text-xs text-gray-400 truncate mt-0.5">{song.artist?.name || 'Artist'}</p>
-      </div>
-
-      {/* Album Name (if present) */}
-      {song.album && (
-        <div className="hidden md:block w-48 text-xs text-gray-400 truncate">
-          {song.album.title}
+            <span className="md:group-hover:hidden">{(index + 1).toString().padStart(2, '0')}</span>
+          )}
+          {!isCurrent && (
+            <Play className="w-4 h-4 text-white fill-current hidden md:group-hover:block" />
+          )}
         </div>
-      )}
 
-      {/* Duration */}
-      <div className="text-xs text-gray-400 font-medium">
-        {formatDuration(song.duration)}
-      </div>
+        {/* Cover Image */}
+        <img
+          src={song.coverUrl || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=150&q=80'}
+          alt={song.title}
+          className="w-10 h-10 md:w-11 md:h-11 rounded-xl object-cover shadow border border-white/10 flex-shrink-0"
+          loading="lazy"
+        />
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-        {onAddToPlaylist && (
-          <button
-            onClick={() => onAddToPlaylist(song)}
-            className="p-2 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Add to playlist"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
+        {/* Title & Artist */}
+        <div className="min-w-0 flex-1">
+          <h4 className={`text-xs md:text-sm font-bold truncate ${isCurrent ? 'text-purple-300' : 'text-white'}`}>
+            {song.title}
+          </h4>
+          <p className="text-[11px] md:text-xs text-gray-400 truncate mt-0.5">{song.artist?.name || 'Artist'}</p>
+        </div>
+
+        {/* Album Name (Desktop only) */}
+        {song.album && (
+          <div className="hidden lg:block w-44 text-xs text-gray-400 truncate">
+            {song.album.title}
+          </div>
         )}
 
-        <button
-          onClick={handleLikeClick}
-          className="p-2 text-gray-400 hover:text-pink-400 transition-colors"
-          title="Favorite"
-        >
-          <Heart className={`w-4 h-4 ${song.isFavorite ? 'fill-pink-500 text-pink-500' : ''}`} />
-        </button>
+        {/* Duration */}
+        <div className="text-[11px] md:text-xs text-gray-400 font-medium flex-shrink-0">
+          {formatDuration(song.duration)}
+        </div>
 
-        {onRemove && (
+        {/* Desktop & Mobile Actions */}
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={() => onRemove(song.id)}
-            className="p-2 text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Remove"
+            onClick={handleLikeClick}
+            className="p-2 text-gray-400 hover:text-pink-400 min-w-[36px] min-h-[36px] flex items-center justify-center"
+            title="Favorite"
           >
-            <Trash2 className="w-4 h-4" />
+            <Heart className={`w-4 h-4 ${song.isFavorite ? 'fill-pink-500 text-pink-500' : ''}`} />
           </button>
-        )}
+
+          {onRemove && (
+            <button
+              onClick={() => onRemove(song.id)}
+              className="p-2 text-gray-400 hover:text-red-400 min-w-[36px] min-h-[36px] flex items-center justify-center"
+              title="Remove"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+
+          <button
+            onClick={() => setIsActionSheetOpen(true)}
+            className="p-2 text-gray-400 hover:text-white rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center"
+            aria-label="More options"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-    </div>
+
+      {/* Touch Action Sheet */}
+      <SongActionSheet
+        song={song}
+        isOpen={isActionSheetOpen}
+        onClose={() => setIsActionSheetOpen(false)}
+        onAddToPlaylist={onAddToPlaylist}
+      />
+    </>
   );
 };

@@ -4,7 +4,7 @@ import path from 'path';
 
 function getDatabaseUrl(): string {
   const envUrl = process.env.DATABASE_URL;
-  if (envUrl && !envUrl.startsWith('file:.')) {
+  if (envUrl && (envUrl.startsWith('postgres://') || envUrl.startsWith('postgresql://'))) {
     return envUrl;
   }
 

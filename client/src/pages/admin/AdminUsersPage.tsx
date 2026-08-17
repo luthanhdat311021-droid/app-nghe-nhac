@@ -55,7 +55,7 @@ export const AdminUsersPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300 pb-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400">
@@ -75,11 +75,67 @@ export const AdminUsersPage: React.FC = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Filter users by username or email..."
-          className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-none"
+          className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-xs text-white focus:outline-none min-h-[44px]"
         />
       </div>
 
-      <div className="glass-panel rounded-3xl border border-white/10 overflow-hidden">
+      {/* Mobile Card View (< md) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+        {loading ? (
+          <p className="text-center text-gray-400 py-6">Loading user accounts...</p>
+        ) : users.map((u) => (
+          <div key={u.id} className="glass-card p-4 rounded-2xl border border-white/10 space-y-3">
+            <div className="flex items-center gap-3">
+              <img
+                src={u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80'}
+                alt={u.username}
+                className="w-12 h-12 rounded-full object-cover border border-white/10"
+              />
+              <div className="min-w-0 flex-1">
+                <h4 className="text-sm font-bold text-white truncate">{u.username}</h4>
+                <p className="text-xs text-gray-400 truncate">{u.email}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-white/5">
+              <button
+                onClick={() => handleToggleRole(u)}
+                className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                  u.role === 'ADMIN' ? 'bg-pink-500/20 border-pink-500/30 text-pink-300' : 'bg-purple-500/10 border-purple-500/20 text-purple-300'
+                }`}
+              >
+                Role: {u.role}
+              </button>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                u.isLocked ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'
+              }`}>
+                {u.isLocked ? 'Locked' : 'Active'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                onClick={() => handleToggleLock(u)}
+                className={`flex-1 py-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 min-h-[44px] ${
+                  u.isLocked ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                }`}
+              >
+                {u.isLocked ? <><Unlock className="w-4 h-4" /> Unlock</> : <><Lock className="w-4 h-4" /> Lock</>}
+              </button>
+              <button
+                onClick={() => handleDeleteUser(u.id)}
+                className="py-2.5 px-4 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold flex items-center justify-center gap-1 min-h-[44px]"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete</span>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View (md+) */}
+      <div className="hidden md:block glass-panel rounded-3xl border border-white/10 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-white/5 text-gray-400 uppercase tracking-wider font-semibold border-b border-white/10">

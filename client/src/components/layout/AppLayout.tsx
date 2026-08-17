@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { BottomNavigation } from './BottomNavigation';
 import { BottomPlayer } from '../player/BottomPlayer';
 import { LyricsModal } from '../player/LyricsModal';
 import { QueueDrawer } from '../player/QueueDrawer';
@@ -21,7 +22,7 @@ export const AppLayout: React.FC = () => {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0">
           <Header />
-          <main className={`flex-1 p-6 md:p-8 overflow-y-auto ${currentSong ? 'pb-32' : 'pb-12'}`}>
+          <main className={`flex-1 p-4 md:p-8 overflow-y-auto ${currentSong ? 'pb-40 md:pb-32' : 'pb-24 md:pb-12'}`}>
             <Outlet />
           </main>
         </div>
@@ -29,6 +30,9 @@ export const AppLayout: React.FC = () => {
 
       {/* Persistent Bottom Player */}
       <BottomPlayer />
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNavigation />
 
       {/* Lyrics Modal */}
       <LyricsModal />

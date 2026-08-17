@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const songController_1 = require("../controllers/songController");
+const adminController_1 = require("../controllers/adminController");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 router.get('/', auth_1.optionalAuthenticate, songController_1.getSongs);
 router.get('/trending', songController_1.getTrendingSongs);
+router.post('/', auth_1.optionalAuthenticate, adminController_1.createSong);
 router.get('/:id', auth_1.optionalAuthenticate, songController_1.getSongById);
 router.post('/:id/play', songController_1.incrementPlayCount);
 exports.default = router;
